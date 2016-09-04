@@ -10,7 +10,7 @@ struct Surname
 	std::string word;
 };
 
-void AddToVector(std::string const& word, int const& position, std::vector<Surname>& surname)
+void PushInVector(std::string const& word, int const& position, std::vector<Surname>& surname)
 {
 	Surname structSurname;
 	structSurname.word = word;
@@ -24,7 +24,7 @@ void SaveData(std::string &word, std::vector<Surname>& surname, fpos_t const& po
 	if (word != "")
 	{
 		int position = static_cast<int>(pointerPositionInFile) - word.length();
-		AddToVector(word, position, surname);
+		PushInVector(word, position, surname);
 		word = "";
 	}
 }
