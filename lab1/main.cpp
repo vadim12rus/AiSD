@@ -10,7 +10,7 @@ struct Surname
 	std::string word;
 };
 
-void SaveData(std::string const& word, int const& position, std::vector<Surname>& surname)
+void AddToVector(std::string const& word, int const& position, std::vector<Surname>& surname)
 {
 	Surname structSurname;
 	structSurname.word = word;
@@ -18,7 +18,16 @@ void SaveData(std::string const& word, int const& position, std::vector<Surname>
 	structSurname.amountChar = word.length();
 	surname.push_back(structSurname);
 }
-
+ 
+void SaveData(std::string &word, std::vector<Surname>& surname, fpos_t const& pointerPositionInFile)
+{
+	if (word != "")
+	{
+		int position = static_cast<int>(pointerPositionInFile) - word.length();
+		AddToVector(word, position, surname);
+		word = "";
+	}
+}
 void ReadSurname(FILE* const& file, std::vector<Surname>& surname)
 {
 	char ch;
@@ -29,26 +38,16 @@ void ReadSurname(FILE* const& file, std::vector<Surname>& surname)
 	{
 		if (ch == '\n')
 		{
-			if (word != "")
-			{
-				fgetpos(file, &pointerPositionInFile);
-				int position = static_cast<int>(pointerPositionInFile) - word.length() - 2;
-				SaveData(word, position, surname);
-				word = "";
-			}
+			fgetpos(file, &pointerPositionInFile);
+			SaveData(word, surname, pointerPositionInFile-2);
 		}
 		else
 		{
 			word += ch;
 		}
 	}
-	if (word != "")
-	{
-		fgetpos(file, &pointerPositionInFile);
-		int position = static_cast<int>(pointerPositionInFile) - word.length();
-		SaveData(word, position, surname);
-		word = "";
-	}
+	fgetpos(file, &pointerPositionInFile);
+	SaveData(word, surname, pointerPositionInFile);
 }
 
 int CompareStrings(std::string const& a, std::string const& b)
