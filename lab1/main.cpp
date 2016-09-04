@@ -32,7 +32,7 @@ void ReadSurname(FILE* const& file, std::vector<Surname>& surname)
 			if (word != "")
 			{
 				fgetpos(file, &pointerPositionInFile);
-				int position = pointerPositionInFile - word.length() - 2;
+				int position = static_cast<int>(pointerPositionInFile) - word.length() - 2;
 				SaveData(word, position, surname);
 				word = "";
 			}
@@ -45,7 +45,7 @@ void ReadSurname(FILE* const& file, std::vector<Surname>& surname)
 	if (word != "")
 	{
 		fgetpos(file, &pointerPositionInFile);
-		int position = pointerPositionInFile - word.length();
+		int position = static_cast<int>(pointerPositionInFile) - word.length();
 		SaveData(word, position, surname);
 		word = "";
 	}
