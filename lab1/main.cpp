@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 static const std::string fileName = "file/surname.txt";
+static const char REPLACEMENT = '*';
 
 struct Surname
 {
@@ -9,20 +10,16 @@ struct Surname
 	std::string word;
 };
 
-void SaveData(std::string &const word, int &const position, std::vector<Surname>& surname)
+void SaveData(std::string const& word, int const& position, std::vector<Surname>& surname)
 {
 	Surname structSurname;
 	structSurname.word = word;
 	structSurname.startBytes = position;
 	structSurname.amountChar = word.length();
 	surname.push_back(structSurname);
-	std::cout << structSurname.startBytes << std::endl;
 }
 
-void PushInVector()
-{
-}
-void ReadSurname(FILE* &const file, std::vector<Surname>& surname)
+void ReadSurname(FILE* const& file, std::vector<Surname>& surname)
 {
 	char ch;
 	std::string word;
@@ -30,7 +27,6 @@ void ReadSurname(FILE* &const file, std::vector<Surname>& surname)
 	fpos_t pointerPositionInFile;
 	while ((ch = getc(file)) != EOF)
 	{
-		std::cout << ch;
 		if (ch == '\n')
 		{
 			if (word != "")
@@ -55,12 +51,32 @@ void ReadSurname(FILE* &const file, std::vector<Surname>& surname)
 	}
 }
 
-bool CompareStrings(std::string &const a, std::string &const b)
+int CompareStrings(std::string const& a, std::string const& b)
 {
-	return (strcmp(a.c_str(), b.c_str())) > 0;
+	return (strcmp(a.c_str(), b.c_str()));
 }
 
-Surname SearchSurname(std::vector<Surname> &const surname)
+std::string GetStringReplacement(Surname const& surname)
+{
+	std::string buf = "";
+	for (int i = 0; i != surname.amountChar; i++)
+	{
+		buf += REPLACEMENT;
+	}
+	return buf;
+}
+bool IsReplaced(Surname const& surname)
+{
+	bool isReplaced = true;
+	std::string replacement = GetStringReplacement(surname);
+	if (CompareStrings(surname.word, replacement) == 0)
+	{
+		isReplaced = false;
+	}
+	return isReplaced;
+}
+
+Surname SearchSurname(std::vector<Surname> const& surname)
 {
 	Surname maxSurname;
 	maxSurname = surname[0];
@@ -68,7 +84,7 @@ Surname SearchSurname(std::vector<Surname> &const surname)
 	{
 		for (int i = 1; i != surname.size(); i++)
 		{
-			if (CompareStrings(maxSurname.word, surname[i].word))
+			if ((CompareStrings(maxSurname.word, surname[i].word) > 0) /*&& IsReplaced(surname[i])*/)
 			{
 				maxSurname = surname[i];
 			}
@@ -77,15 +93,11 @@ Surname SearchSurname(std::vector<Surname> &const surname)
 	return maxSurname;
 }
 
-void ReplaceWord(FILE* & file, Surname &const surname)
+void ReplaceWord(FILE* & file, Surname const& surname)
 {
-	std::string buf;
-	for (int i = 0; i != surname.amountChar; i++)
-	{
-		buf += "*";
-	}
+	std::string replacement = GetStringReplacement(surname);
 	fseek(file, surname.startBytes, SEEK_SET);
-	fwrite(buf.c_str(), surname.amountChar, 1, file);
+	fwrite(replacement.c_str(), surname.amountChar, 1, file);
 }
 
 FILE* OpenFile()
@@ -97,7 +109,7 @@ FILE* OpenFile()
 
 int main()
 {
-	//setlocale(LC_ALL, "Russian");
+	setlocale(LC_ALL, "Russian");
 	FILE* fileWithSurname = OpenFile();
 	if (fileWithSurname && (sizeof(fileWithSurname) != 0))
 	{
@@ -114,6 +126,6 @@ int main()
 		std::cout << "Something wrong with the file!!!" << std::endl;
 	}
 	fclose(fileWithSurname);
-	system("pause");
+	//system("pause");
 	return 1;
 }
