@@ -9,15 +9,19 @@ struct Surname
 	std::string word;
 };
 
-void SaveData(std::string &const word, fpos_t &const pointerPositionInFile, std::vector<Surname>& surname)
+void SaveData(std::string &const word, int &const position, std::vector<Surname>& surname)
 {
 	Surname structSurname;
 	structSurname.word = word;
-	structSurname.startBytes = pointerPositionInFile - word.length() - 2;
+	structSurname.startBytes = position;
 	structSurname.amountChar = word.length();
 	surname.push_back(structSurname);
+	std::cout << structSurname.startBytes << std::endl;
 }
 
+void PushInVector()
+{
+}
 void ReadSurname(FILE* &const file, std::vector<Surname>& surname)
 {
 	char ch;
@@ -26,12 +30,14 @@ void ReadSurname(FILE* &const file, std::vector<Surname>& surname)
 	fpos_t pointerPositionInFile;
 	while ((ch = getc(file)) != EOF)
 	{
+		std::cout << ch;
 		if (ch == '\n')
 		{
 			if (word != "")
 			{
 				fgetpos(file, &pointerPositionInFile);
-				SaveData(word, pointerPositionInFile, surname);
+				int position = pointerPositionInFile - word.length() - 2;
+				SaveData(word, position, surname);
 				word = "";
 			}
 		}
@@ -39,6 +45,13 @@ void ReadSurname(FILE* &const file, std::vector<Surname>& surname)
 		{
 			word += ch;
 		}
+	}
+	if (word != "")
+	{
+		fgetpos(file, &pointerPositionInFile);
+		int position = pointerPositionInFile - word.length();
+		SaveData(word, position, surname);
+		word = "";
 	}
 }
 
@@ -50,13 +63,15 @@ bool CompareStrings(std::string &const a, std::string &const b)
 Surname SearchSurname(std::vector<Surname> &const surname)
 {
 	Surname maxSurname;
-	maxSurname.word = surname[0].word;
-	for (int i = 1; i != surname.size(); i++)
+	maxSurname = surname[0];
+	if (surname.size() >= 2)
 	{
-		if (CompareStrings(maxSurname.word, surname[i].word))
+		for (int i = 1; i != surname.size(); i++)
 		{
-			std::cout << surname[i].word.c_str() << std::endl;
-			maxSurname = surname[i];
+			if (CompareStrings(maxSurname.word, surname[i].word))
+			{
+				maxSurname = surname[i];
+			}
 		}
 	}
 	return maxSurname;
@@ -82,19 +97,23 @@ FILE* OpenFile()
 
 int main()
 {
-	setlocale(LC_ALL, "Russian");
+	//setlocale(LC_ALL, "Russian");
 	FILE* fileWithSurname = OpenFile();
 	if (fileWithSurname && (sizeof(fileWithSurname) != 0))
 	{
 		std::vector<Surname> surname;
 		ReadSurname(fileWithSurname, surname);
-		Surname maxSurname = SearchSurname(surname);
-		ReplaceWord(fileWithSurname, maxSurname);
+		if (surname.size() != 0)
+		{
+			Surname maxSurname = SearchSurname(surname);
+			ReplaceWord(fileWithSurname, maxSurname);
+		}
 	}
 	else
 	{
 		std::cout << "Something wrong with the file!!!" << std::endl;
 	}
 	fclose(fileWithSurname);
+	system("pause");
 	return 1;
 }
